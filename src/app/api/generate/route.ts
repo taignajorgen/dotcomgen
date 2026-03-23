@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 export const maxDuration = 60; // Allow function to run up to 60 seconds
 
 import OpenAI from 'openai';
-import whois from 'whois';
+import * as whois from 'whois';
 import { createClient } from '../../../utils/supabase/server';
 
 const openai = new OpenAI({
