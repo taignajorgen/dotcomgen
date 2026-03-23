@@ -154,17 +154,25 @@ Plain a-z letters only. Output a JSON object with a single key "names" containin
         const domains = names.map((n: string) => `${n.toLowerCase().replace(/[^a-z]/g, '')}.com`);
         const uniqueDomains = Array.from(new Set<string>(domains));
 
-        // Skip DNS (unreliable with parallel timeouts) and go straight to WHOIS
+        // Run WHOIS checks in parallel batches with a hard 45-second budget
+        const BATCH_SIZE = 5;
+        const MAX_RESULTS = 10;
+        const DEADLINE_MS = 45_000;
+        const startTime = Date.now();
         const finalAvailableDomains: string[] = [];
-        for (const domain of uniqueDomains) {
-            if (finalAvailableDomains.length >= 10) break;
 
-            const isAvail = await isWhoisAvailable(domain);
-            if (isAvail) {
-                finalAvailableDomains.push(domain);
-            }
-            // Small delay between WHOIS calls to avoid rate limiting
-            await new Promise(resolve => setTimeout(resolve, 300));
+        for (let i = 0; i < uniqueDomains.length; i += BATCH_SIZE) {
+            if (finalAvailableDomains.length >= MAX_RESULTS) break;
+            if (Date.now() - startTime > DEADLINE_MS) break;
+
+            const batch = uniqueDomains.slice(i, i + BATCH_SIZE);
+            const results = await Promise.all(batch.map(d => isWhoisAvailable(d)));
+
+            batch.forEach((domain, idx) => {
+                if (results[idx] && finalAvailableDomains.length < MAX_RESULTS) {
+                    finalAvailableDomains.push(domain);
+                }
+            });
         }
 
         return NextResponse.json({

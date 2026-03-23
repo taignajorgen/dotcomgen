@@ -117,7 +117,12 @@ export default function Home() {
         body: JSON.stringify({ idea, similarTo: similarDomain }),
       });
 
-      const data = await res.json();
+      let data: any;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error('The server took too long to respond. Please try again.');
+      }
 
       if (res.status === 401) {
         // Not logged in (shouldn't reach here, but just in case)
