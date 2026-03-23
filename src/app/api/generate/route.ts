@@ -2,12 +2,8 @@ import { NextResponse } from 'next/server';
 export const maxDuration = 60; // Allow function to run up to 60 seconds
 
 import OpenAI from 'openai';
-import dns from 'dns';
-import { exec } from 'child_process';
-import util from 'util';
+import whois from 'whois';
 import { createClient } from '../../../utils/supabase/server';
-
-const execPromise = util.promisify(exec);
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -15,53 +11,52 @@ const openai = new OpenAI({
 
 const ADMIN_EMAIL = 'jerome.langvist@gmail.com';
 
-const withTimeout = (promise: Promise<any>, ms: number) => {
-    return Promise.race([
-        promise,
-        new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), ms))
-    ]);
-};
-
-async function isDnsAvailable(domain: string): Promise<boolean> {
-    try {
-        const records = await withTimeout(dns.promises.resolveAny(domain), 2000);
-        return records.length === 0;
-    } catch (err: any) {
-        console.log(`[DNS] ${domain} - CODE: ${err.code} - MSG: ${err.message}`);
-        if (err.message === 'TIMEOUT') return false;
-        if (err.code === 'ENOTFOUND' || err.code === 'ENODATA' || err.code === 'SERVFAIL') {
-            return true;
-        }
-        return false;
-    }
-}
-
-// Helper: WHOIS check. Returns true if available.
+// Helper: WHOIS check using the npm whois package (works in serverless environments).
 async function isWhoisAvailable(domain: string): Promise<boolean> {
-    try {
-        // Run native WHOIS command with a 8-second timeout
-        const { stdout, stderr } = await execPromise(`whois ${domain}`, { timeout: 8000 });
+    return new Promise((resolve) => {
+        const timer = setTimeout(() => {
+            console.warn(`[WHOIS TIMEOUT]: ${domain}`);
+            resolve(false);
+        }, 9000);
 
-        if (stderr && stderr.toLowerCase().includes('rate limit')) {
-            console.warn(`[WHOIS RATE LIMIT]: ${domain}`);
-            return false;
-        }
+        whois.lookup(domain, (err: any, data: any) => {
+            clearTimeout(timer);
+            if (err) {
+                console.error(`[WHOIS ERROR] ${domain}:`, err.message);
+                resolve(false);
+                return;
+            }
 
-        const text = stdout.toLowerCase();
+            const text = (data || '').toLowerCase();
 
-        if (text.includes('no match for') || text.includes('not found') || text.includes('is free') || text.includes('no object found')) {
-            return true;
-        }
+            if (text.includes('rate limit')) {
+                console.warn(`[WHOIS RATE LIMIT]: ${domain}`);
+                resolve(false);
+                return;
+            }
 
-        if (text.includes('creation date:') || text.includes('registrar:') || text.includes('domain status:')) {
-            return false;
-        }
+            if (
+                text.includes('no match for') ||
+                text.includes('not found') ||
+                text.includes('is free') ||
+                text.includes('no object found')
+            ) {
+                resolve(true);
+                return;
+            }
 
-        return false;
-    } catch (e: any) {
-        console.error(`WHOIS error/timeout for ${domain}:`, e.message);
-        return false;
-    }
+            if (
+                text.includes('creation date:') ||
+                text.includes('registrar:') ||
+                text.includes('domain status:')
+            ) {
+                resolve(false);
+                return;
+            }
+
+            resolve(false);
+        });
+    });
 }
 
 export async function POST(req: Request) {
