@@ -56,6 +56,7 @@ const TIERS: Tier[] = [
 
 export default function PricingPopup({ onClose, isLoggedIn, isLimitReached }: Props) {
     const [loading, setLoading] = useState<string | null>(null);
+    const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
     const handleSelect = async (tier: Tier) => {
         if (tier.id === 'free') {
@@ -69,6 +70,7 @@ export default function PricingPopup({ onClose, isLoggedIn, isLimitReached }: Pr
         }
 
         setLoading(tier.id);
+        setCheckoutError(null);
         try {
             const res = await fetch('/api/stripe/checkout', {
                 method: 'POST',
@@ -78,9 +80,12 @@ export default function PricingPopup({ onClose, isLoggedIn, isLimitReached }: Pr
             const data = await res.json();
             if (data.url) {
                 window.location.href = data.url;
+            } else {
+                setCheckoutError(data.error || 'Checkout failed. Please try again.');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Checkout error:', err);
+            setCheckoutError('Something went wrong. Please try again.');
         } finally {
             setLoading(null);
         }
@@ -103,6 +108,19 @@ export default function PricingPopup({ onClose, isLoggedIn, isLimitReached }: Pr
                             : 'Choose a plan to unlock the domain generator.'}
                     </p>
                 </div>
+
+                {checkoutError && (
+                    <div style={{
+                        background: '#fca5a5',
+                        border: '2px solid var(--border-color)',
+                        padding: '0.75rem 1rem',
+                        marginBottom: '1rem',
+                        fontWeight: 700,
+                        fontSize: '0.9rem',
+                    }}>
+                        ⚠️ {checkoutError}
+                    </div>
+                )}
 
                 <div className="pricing-grid">
                     {TIERS.map((tier) => (
