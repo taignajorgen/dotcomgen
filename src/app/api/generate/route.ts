@@ -6,7 +6,7 @@ import * as whois from 'whois';
 import { createClient } from '../../../utils/supabase/server';
 
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY || 'sk-dummy-key-for-build',
 });
 
 const ADMIN_EMAIL = 'jerome.langvist@gmail.com';
