@@ -212,7 +212,7 @@ export default function Home() {
 
         {!loading && results.length > 0 && (
           <section className="glass-panel" style={{ animation: 'fadeIn 0.5s ease' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="section-header">
               <h2>Available Domains</h2>
               <span className="status-badge">
                 {stats?.generated ? `Generated ${stats.generated} → Filtered down to ${results.length}` : `${results.length} domains found`}

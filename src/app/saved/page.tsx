@@ -78,7 +78,7 @@ export default function SavedDomainsPage() {
                     </section>
                 ) : (
                     <section className="glass-panel" style={{ animation: 'fadeIn 0.5s ease' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div className="section-header">
                             <h2>Your Collection</h2>
                             <span className="status-badge">{domains.length} saved</span>
                         </div>
