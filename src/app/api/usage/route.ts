@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../utils/supabase/server';
 
-const ADMIN_EMAIL = 'jerome.langvist@gmail.com';
+const ADMIN_EMAILS = ['jerome.langvist@gmail.com', 'kontaktiere.mich@pm.me'];
 
 export async function GET() {
     const supabase = await createClient();
@@ -12,7 +12,7 @@ export async function GET() {
     }
 
     // Admin bypass
-    if (user.email === ADMIN_EMAIL) {
+    if (user.email && ADMIN_EMAILS.includes(user.email)) {
         return NextResponse.json({ status: 'admin', canGenerate: true, remaining: Infinity });
     }
 

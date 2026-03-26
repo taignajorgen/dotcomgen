@@ -9,7 +9,7 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || 'sk-dummy-key-for-build',
 });
 
-const ADMIN_EMAIL = 'jerome.langvist@gmail.com';
+const ADMIN_EMAILS = ['jerome.langvist@gmail.com', 'kontaktiere.mich@pm.me'];
 
 // Helper: WHOIS check using the npm whois package (works in serverless environments).
 async function isWhoisAvailable(domain: string): Promise<boolean> {
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'idea is required' }, { status: 400 });
         }
 
-        const isAdmin = user.email === ADMIN_EMAIL;
+        const isAdmin = user.email && ADMIN_EMAILS.includes(user.email);
 
         // Usage gate (skip for admin)
         if (!isAdmin) {
