@@ -2,12 +2,14 @@ import { NextResponse } from 'next/server';
 import { createClient } from '../../../../utils/supabase/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_dummy_key_for_build', {
-    apiVersion: '2025-11-17.clover' as any,
-});
+
 
 export async function POST(req: Request) {
     try {
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_dummy_key_for_build', {
+            apiVersion: '2025-11-17.clover' as any,
+        });
+
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 

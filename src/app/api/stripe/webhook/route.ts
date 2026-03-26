@@ -2,9 +2,7 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_dummy_key_for_build', {
-    apiVersion: '2025-11-17.clover' as any,
-});
+
 
 // Use service role key to bypass RLS — this runs server-side only, never exposed to clients
 const supabase = createClient(
@@ -18,6 +16,10 @@ const CREDIT_MAP: Record<string, number> = {
 };
 
 export async function POST(req: Request) {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_dummy_key_for_build', {
+        apiVersion: '2025-11-17.clover' as any,
+    });
+
     const body = await req.text();
     const sig = req.headers.get('stripe-signature');
 
