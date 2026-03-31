@@ -21,9 +21,9 @@ export async function POST(req: Request) {
         const { tier } = await req.json();
 
         const priceMap: Record<string, string | undefined> = {
-            starter: process.env.STRIPE_PRICE_STARTER,
-            pro: process.env.STRIPE_PRICE_PRO,
-            unlimited: process.env.STRIPE_PRICE_UNLIMITED,
+            starter: process.env.STRIPE_PRICE_STARTER?.trim(),
+            pro: process.env.STRIPE_PRICE_PRO?.trim(),
+            unlimited: process.env.STRIPE_PRICE_UNLIMITED?.trim(),
         };
 
         const priceId = priceMap[tier];
