@@ -18,6 +18,7 @@ const CREDIT_MAP: Record<string, number> = {
 export async function POST(req: Request) {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_dummy_key_for_build', {
         apiVersion: '2025-11-17.clover' as any,
+        httpClient: Stripe.createFetchHttpClient(),
     });
 
     const body = await req.text();
