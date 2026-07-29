@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "dotcomgen — Find Available .com Domains",
   description: "AI-powered .com domain name generator. Find available, brandable domain names for your next big idea.",
+  other: {
+    "impact-site-verification": "3a8ccb66-f844-4b16-a28f-23e09f4758ec",
+  },
 };
 
 export const viewport: Viewport = {
@@ -29,6 +32,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <head>
+        <meta name="impact-site-verification" content="3a8ccb66-f844-4b16-a28f-23e09f4758ec" {...({ value: "3a8ccb66-f844-4b16-a28f-23e09f4758ec" } as Record<string, string>)} />
+      </head>
       <body>{children}</body>
     </html>
   );
