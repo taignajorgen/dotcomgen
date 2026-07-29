@@ -59,13 +59,26 @@ async function isWhoisAvailable(domain: string): Promise<boolean> {
     });
 }
 
+import { cookies } from 'next/headers';
+
 export async function POST(req: Request) {
     try {
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
+        const cookieStore = await cookies();
+        const anonUsed = cookieStore.get('dotcomgen_anon_used')?.value === 'true';
+
+        let isAnonGuest = false;
+
         if (!user) {
-            return NextResponse.json({ error: 'auth_required', message: 'Please sign up or log in to generate domains.' }, { status: 401 });
+            if (anonUsed) {
+                return NextResponse.json({
+                    error: 'anon_limit_reached',
+                    message: 'You have used your 1 free guest generation. Please sign up to continue!',
+                }, { status: 401 });
+            }
+            isAnonGuest = true;
         }
 
         const body = await req.json();
@@ -75,10 +88,10 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'idea is required' }, { status: 400 });
         }
 
-        const isAdmin = user.email && ADMIN_EMAILS.includes(user.email);
+        const isAdmin = user && user.email && ADMIN_EMAILS.includes(user.email);
 
-        // Usage gate (skip for admin)
-        if (!isAdmin) {
+        // Usage gate (skip for admin and guest first try)
+        if (user && !isAdmin) {
             // Check paid credits first
             const { data: credits } = await supabase
                 .from('user_credits')
@@ -121,8 +134,10 @@ export async function POST(req: Request) {
             }
         }
 
-        // Log the generation
-        await supabase.from('generation_log').insert({ user_id: user.id });
+        // Log the generation for logged-in users
+        if (user) {
+            await supabase.from('generation_log').insert({ user_id: user.id });
+        }
 
         let promptContent = `Idea: ${idea}`;
         if (similarTo) {
@@ -175,13 +190,23 @@ Plain a-z letters only. Output a JSON object with a single key "names" containin
             });
         }
 
-        return NextResponse.json({
+        const res = NextResponse.json({
             domains: finalAvailableDomains,
             stats: {
                 generated: uniqueDomains.length,
                 available: finalAvailableDomains.length
             }
         });
+
+        if (isAnonGuest) {
+            res.cookies.set('dotcomgen_anon_used', 'true', {
+                maxAge: 60 * 60 * 24 * 365, // 1 year
+                path: '/',
+                sameSite: 'lax',
+            });
+        }
+
+        return res;
     } catch (error: any) {
         console.error('Error in API:', error);
         return NextResponse.json({ error: error.message || 'Error occurred' }, { status: 500 });

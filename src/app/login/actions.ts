@@ -7,37 +7,38 @@ import { createClient } from '../../utils/supabase/server'
 export async function login(formData: FormData) {
     const supabase = await createClient()
 
-    const data = {
-        email: formData.get('email') as string,
-        password: formData.get('password') as string,
-    }
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+    const tier = formData.get('tier') as string
 
-    const { error } = await supabase.auth.signInWithPassword(data)
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
-        redirect('/login?message=Could not authenticate user')
+        redirect(`/login?message=Could not authenticate user${tier ? `&tier=${tier}` : ''}`)
     }
 
     revalidatePath('/', 'layout')
+    if (tier && ['starter', 'pro', 'unlimited'].includes(tier)) {
+        redirect(`/?checkout_tier=${tier}`)
+    }
     redirect('/')
 }
 
 export async function signup(formData: FormData) {
     const supabase = await createClient()
 
-    const data = {
-        email: formData.get('email') as string,
-        password: formData.get('password') as string,
-    }
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+    const tier = formData.get('tier') as string
 
-    const { error, data: authData } = await supabase.auth.signUp(data)
+    const { error, data: authData } = await supabase.auth.signUp({ email, password })
 
     if (error) {
-        redirect(`/login?message=${error.message}`)
+        redirect(`/login?message=${encodeURIComponent(error.message)}${tier ? `&tier=${tier}` : ''}`)
     }
 
     if (authData.user && authData.user.identities && authData.user.identities.length === 0) {
-        redirect('/login?message=Email already in use')
+        redirect(`/login?message=Email already in use${tier ? `&tier=${tier}` : ''}`)
     }
 
     if (!authData.session && authData.user) {
@@ -45,5 +46,8 @@ export async function signup(formData: FormData) {
     }
 
     revalidatePath('/', 'layout')
+    if (tier && ['starter', 'pro', 'unlimited'].includes(tier)) {
+        redirect(`/?checkout_tier=${tier}`)
+    }
     redirect('/')
 }

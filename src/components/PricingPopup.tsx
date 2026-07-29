@@ -59,13 +59,17 @@ export default function PricingPopup({ onClose, isLoggedIn, isLimitReached }: Pr
     const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
     const handleSelect = async (tier: Tier) => {
-        if (tier.id === 'free') {
-            window.location.href = '/login';
+        if (!isLoggedIn) {
+            if (tier.id === 'free') {
+                window.location.href = '/login?mode=signup';
+            } else {
+                window.location.href = `/login?mode=signup&tier=${tier.id}`;
+            }
             return;
         }
 
-        if (!isLoggedIn) {
-            window.location.href = '/login';
+        if (tier.id === 'free') {
+            onClose();
             return;
         }
 

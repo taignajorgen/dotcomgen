@@ -2,9 +2,13 @@ import { login, signup } from './actions'
 import { GoogleButton } from './google-button'
 
 // searchParams is a promise in Next 15+, so we await it or just use it loosely
-export default async function LoginPage(props: { searchParams: Promise<{ message?: string, mode?: string }> }) {
+export default async function LoginPage(props: { searchParams: Promise<{ message?: string, mode?: string, tier?: string }> }) {
     const searchParams = await props.searchParams;
     const isSignup = searchParams.mode === 'signup';
+    const tier = searchParams.tier;
+
+    const loginHref = `/login${tier ? `?tier=${tier}` : ''}`;
+    const signupHref = `/login?mode=signup${tier ? `&tier=${tier}` : ''}`;
 
     return (
         <div className="container" style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
@@ -15,6 +19,7 @@ export default async function LoginPage(props: { searchParams: Promise<{ message
 
             <section className="glass-panel" style={{ width: '100%', maxWidth: '500px' }}>
                 <form className="form-group" style={{ marginBottom: 0 }}>
+                    {tier && <input type="hidden" name="tier" value={tier} />}
                     <label htmlFor="email">Email address</label>
                     <input id="email" name="email" type="email" required />
 
@@ -35,16 +40,16 @@ export default async function LoginPage(props: { searchParams: Promise<{ message
 
                     <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '1rem', fontWeight: 700 }}>
                         {isSignup ? (
-                            <>Already connected? <a href="/login" style={{ color: 'var(--accent-cyan)' }}>Log In</a></>
+                            <>Already connected? <a href={loginHref} style={{ color: 'var(--accent-cyan)' }}>Log In</a></>
                         ) : (
-                            <>Don't have an account yet? <a href="/login?mode=signup" style={{ color: 'var(--accent-cyan)' }}>Sign Up</a></>
+                            <>Don't have an account yet? <a href={signupHref} style={{ color: 'var(--accent-cyan)' }}>Sign Up</a></>
                         )}
                     </div>
                 </form>
 
                 <div style={{ margin: '2rem 0', textAlign: 'center', fontWeight: 800 }}>OR</div>
 
-                <GoogleButton />
+                <GoogleButton tier={tier} />
             </section>
         </div>
     )

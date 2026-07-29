@@ -35,7 +35,7 @@ export default function Home() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       setUser(user);
       if (user) {
         fetch('/api/saved-domains')
@@ -45,6 +45,27 @@ export default function Home() {
               setSavedDomains(new Set(data.domains.map((d: any) => d.domain)));
             }
           });
+
+        // Check if returning from signup with a requested paid checkout tier
+        const urlParams = new URLSearchParams(window.location.search);
+        const checkoutTier = urlParams.get('checkout_tier');
+        if (checkoutTier && ['starter', 'pro', 'unlimited'].includes(checkoutTier)) {
+          // Clean URL parameter
+          window.history.replaceState({}, '', window.location.pathname);
+          try {
+            const res = await fetch('/api/stripe/checkout', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ tier: checkoutTier }),
+            });
+            const data = await res.json();
+            if (data.url) {
+              window.location.href = data.url;
+            }
+          } catch (err) {
+            console.error('Auto checkout error:', err);
+          }
+        }
       }
     });
   }, []);
@@ -97,11 +118,14 @@ export default function Home() {
     if (e) e.preventDefault();
     if (!idea.trim() && !similarDomain) return;
 
-    // Gate: must be logged in
+    // Unauthenticated user check for 1-free guest try
     if (!user) {
-      setLimitReached(false);
-      setShowPricing(true);
-      return;
+      const anonUsed = typeof window !== 'undefined' && localStorage.getItem('dotcomgen_anon_used') === 'true';
+      if (anonUsed) {
+        setLimitReached(false);
+        setShowPricing(true);
+        return;
+      }
     }
 
     setLoading(true);
@@ -125,7 +149,9 @@ export default function Home() {
       }
 
       if (res.status === 401) {
-        // Not logged in (shouldn't reach here, but just in case)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('dotcomgen_anon_used', 'true');
+        }
         setLimitReached(false);
         setShowPricing(true);
         return;
@@ -139,6 +165,11 @@ export default function Home() {
 
       if (!res.ok) {
         throw new Error(data.error || 'Failed to generate names');
+      }
+
+      // Mark anonymous try as used on successful guest generation
+      if (!user && typeof window !== 'undefined') {
+        localStorage.setItem('dotcomgen_anon_used', 'true');
       }
 
       setResults(data.domains || []);
