@@ -57,13 +57,19 @@ const TIERS: Tier[] = [
 export default function PricingPopup({ onClose, isLoggedIn, isLimitReached }: Props) {
     const [loading, setLoading] = useState<string | null>(null);
     const [checkoutError, setCheckoutError] = useState<string | null>(null);
+    const [inviteCode, setInviteCode] = useState('');
+    const [redeemStatus, setRedeemStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+    const [isRedeeming, setIsRedeeming] = useState(false);
+
+    const isRuum = inviteCode.trim().toUpperCase() === 'RUUM';
 
     const handleSelect = async (tier: Tier) => {
         if (!isLoggedIn) {
+            const cleanCode = inviteCode.trim().toUpperCase();
             if (tier.id === 'free') {
-                window.location.href = '/login?mode=signup';
+                window.location.href = `/login?mode=signup${cleanCode ? `&invite_code=${encodeURIComponent(cleanCode)}` : ''}`;
             } else {
-                window.location.href = `/login?mode=signup&tier=${tier.id}`;
+                window.location.href = `/login?mode=signup&tier=${tier.id}${cleanCode ? `&invite_code=${encodeURIComponent(cleanCode)}` : ''}`;
             }
             return;
         }
@@ -92,6 +98,34 @@ export default function PricingPopup({ onClose, isLoggedIn, isLimitReached }: Pr
             setCheckoutError('Something went wrong. Please try again.');
         } finally {
             setLoading(null);
+        }
+    };
+
+    const handleRedeemCode = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!inviteCode.trim()) return;
+
+        setIsRedeeming(true);
+        setRedeemStatus(null);
+        try {
+            const res = await fetch('/api/redeem-invite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: inviteCode }),
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                setRedeemStatus({ type: 'success', message: data.message });
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                setRedeemStatus({ type: 'error', message: data.error || 'Failed to redeem invite code.' });
+            }
+        } catch (err) {
+            setRedeemStatus({ type: 'error', message: 'Something went wrong. Please try again.' });
+        } finally {
+            setIsRedeeming(false);
         }
     };
 
@@ -139,17 +173,86 @@ export default function PricingPopup({ onClose, isLoggedIn, isLimitReached }: Pr
                                 <div className="pricing-name">{tier.name}</div>
                                 <div className="pricing-price">{tier.price}</div>
                                 <div className="pricing-desc">{tier.description}</div>
-                                <div className="pricing-credits">{tier.credits}</div>
+                                <div className="pricing-credits">
+                                    {tier.id === 'free' && isRuum ? '3 daily + 50 BONUS credits' : tier.credits}
+                                </div>
+                                {tier.id === 'free' && (
+                                    <div style={{ marginTop: '0.75rem', textAlign: 'left' }}>
+                                        <label htmlFor="invite-code-input" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: '0.25rem' }}>
+                                            Invite Code
+                                        </label>
+                                        <div style={{ display: 'flex', gap: '0.35rem' }}>
+                                            <input
+                                                id="invite-code-input"
+                                                type="text"
+                                                placeholder="e.g. RUUM"
+                                                value={inviteCode}
+                                                onChange={(e) => setInviteCode(e.target.value)}
+                                                style={{
+                                                    padding: '0.4rem 0.5rem',
+                                                    fontSize: '0.85rem',
+                                                    textTransform: 'uppercase',
+                                                    width: '100%',
+                                                    border: '2px solid var(--border-color)',
+                                                    boxShadow: 'none',
+                                                }}
+                                            />
+                                            {isLoggedIn && (
+                                                <button
+                                                    type="button"
+                                                    onClick={handleRedeemCode}
+                                                    disabled={isRedeeming || !inviteCode.trim()}
+                                                    style={{
+                                                        padding: '0.4rem 0.6rem',
+                                                        fontSize: '0.75rem',
+                                                        border: '2px solid var(--border-color)',
+                                                        boxShadow: 'none',
+                                                        background: 'var(--accent-yellow)',
+                                                        whiteSpace: 'nowrap',
+                                                    }}
+                                                >
+                                                    {isRedeeming ? '...' : 'Apply'}
+                                                </button>
+                                            )}
+                                        </div>
+                                        {isRuum && (
+                                            <div style={{
+                                                marginTop: '0.4rem',
+                                                background: 'var(--accent-yellow)',
+                                                border: '2px solid var(--border-color)',
+                                                padding: '0.25rem 0.5rem',
+                                                fontSize: '0.72rem',
+                                                fontWeight: 800,
+                                            }}>
+                                                🎁 +50 Free Generations!
+                                            </div>
+                                        )}
+                                        {redeemStatus && (
+                                            <div style={{
+                                                marginTop: '0.4rem',
+                                                background: redeemStatus.type === 'success' ? '#86efac' : '#fca5a5',
+                                                border: '2px solid var(--border-color)',
+                                                padding: '0.35rem 0.5rem',
+                                                fontSize: '0.75rem',
+                                                fontWeight: 700,
+                                            }}>
+                                                {redeemStatus.message}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                                 <button
                                     className="pricing-cta"
-                                    style={{ background: tier.color }}
+                                    style={{ background: tier.color, marginTop: tier.id === 'free' ? '0.75rem' : 'auto' }}
                                     onClick={() => handleSelect(tier)}
                                     disabled={loading === tier.id}
                                 >
                                     {loading === tier.id
                                         ? 'Redirecting...'
                                         : tier.id === 'free'
-                                            ? 'Sign Up Free'
+                                            ? isLoggedIn
+                                                ? 'Current Plan'
+                                                : 'Sign Up Free'
                                             : 'Buy Now'}
                                 </button>
                             </div>

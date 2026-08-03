@@ -37,7 +37,6 @@ body {
   flex-direction: column;
   align-items: center;
   overflow-x: hidden;
-  padding-bottom: 4rem;
 }
 
 /* Hide old orbs */
@@ -851,4 +850,157 @@ button:disabled {
   .pricing-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ===== FOOTER STYLES ===== */
+.footer {
+  width: 100%;
+  margin-top: auto;
+  background: var(--card-bg);
+  border-top: 4px solid var(--border-color);
+  padding: 2rem 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 -4px 0 rgba(17, 24, 39, 0.05);
+}
+
+.footer-container {
+  max-width: 900px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.footer-title {
+  font-weight: 800;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+}
+
+.footer-tagline {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.footer-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.footer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  background: var(--bg-color);
+  border: 3px solid var(--border-color);
+  padding: 0.5rem 1rem;
+  box-shadow: 3px 3px 0 var(--border-color);
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.footer-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--border-color);
+  background: var(--accent-yellow);
+}
+
+.footer-btn.terms:hover {
+  background: var(--accent-cyan);
+}
+
+.footer-btn.privacy:hover {
+  background: var(--accent-yellow);
+}
+
+@media (max-width: 640px) {
+  .footer-container {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .footer-brand {
+    align-items: center;
+  }
+
+  .footer-nav {
+    justify-content: center;
+  }
+}
+
+/* ===== LEGAL PAGES STYLES ===== */
+.legal-card {
+  line-height: 1.6;
+}
+
+.legal-card h2 {
+  font-size: 1.5rem;
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+  border-bottom: 3px solid var(--border-color);
+  padding-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legal-card h2:first-of-type {
+  margin-top: 0;
+}
+
+.legal-card p {
+  margin-bottom: 1rem;
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.legal-card ul {
+  margin-bottom: 1.25rem;
+  padding-left: 1.5rem;
+}
+
+.legal-card li {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.legal-card strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.last-updated-badge {
+  display: inline-block;
+  background: var(--accent-yellow);
+  border: 2px solid var(--border-color);
+  box-shadow: 2px 2px 0 var(--border-color);
+  padding: 0.25rem 0.75rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
 }

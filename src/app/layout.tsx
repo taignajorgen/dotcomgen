@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Footer from "../components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +36,10 @@ export default function RootLayout({
       <head>
         <meta name="impact-site-verification" content="3a8ccb66-f844-4b16-a28f-23e09f4758ec" {...({ value: "3a8ccb66-f844-4b16-a28f-23e09f4758ec" } as Record<string, string>)} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Footer />
+      </body>
     </html>
   );
 }

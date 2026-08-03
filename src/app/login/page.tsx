@@ -2,13 +2,17 @@ import { login, signup } from './actions'
 import { GoogleButton } from './google-button'
 
 // searchParams is a promise in Next 15+, so we await it or just use it loosely
-export default async function LoginPage(props: { searchParams: Promise<{ message?: string, mode?: string, tier?: string }> }) {
+export default async function LoginPage(props: { searchParams: Promise<{ message?: string, mode?: string, tier?: string, invite_code?: string }> }) {
     const searchParams = await props.searchParams;
     const isSignup = searchParams.mode === 'signup';
     const tier = searchParams.tier;
+    const inviteCode = searchParams.invite_code || '';
 
-    const loginHref = `/login${tier ? `?tier=${tier}` : ''}`;
-    const signupHref = `/login?mode=signup${tier ? `&tier=${tier}` : ''}`;
+    const inviteQuery = inviteCode ? `&invite_code=${encodeURIComponent(inviteCode)}` : '';
+    const loginHref = `/login${tier ? `?tier=${tier}` : ''}${inviteCode ? `?invite_code=${encodeURIComponent(inviteCode)}` : ''}`;
+    const signupHref = `/login?mode=signup${tier ? `&tier=${tier}` : ''}${inviteQuery}`;
+
+    const isRuumCode = inviteCode.trim().toUpperCase() === 'RUUM';
 
     return (
         <div className="container" style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
@@ -25,6 +29,34 @@ export default async function LoginPage(props: { searchParams: Promise<{ message
 
                     <label htmlFor="password" style={{ marginTop: '0.5rem' }}>Password</label>
                     <input id="password" name="password" type="password" required />
+
+                    {isSignup && (
+                        <>
+                            <label htmlFor="invite_code" style={{ marginTop: '0.5rem' }}>
+                                Invite Code {isRuumCode && <span style={{ color: 'var(--accent-orange)', fontSize: '0.85rem' }}>(Code Active!)</span>}
+                            </label>
+                            <input
+                                id="invite_code"
+                                name="invite_code"
+                                type="text"
+                                defaultValue={inviteCode}
+                                placeholder="e.g. RUUM"
+                                style={{ textTransform: 'uppercase' }}
+                            />
+                            {isRuumCode && (
+                                <div style={{
+                                    marginTop: '0.5rem',
+                                    background: 'var(--accent-yellow)',
+                                    border: '2px solid var(--border-color)',
+                                    padding: '0.4rem 0.75rem',
+                                    fontWeight: 700,
+                                    fontSize: '0.85rem'
+                                }}>
+                                    🎁 Code RUUM: +50 Free Generations on Sign Up!
+                                </div>
+                            )}
+                        </>
+                    )}
 
                     <div style={{ marginTop: '1.5rem' }}>
                         <button formAction={isSignup ? signup : login} style={{ background: isSignup ? 'var(--accent-cyan)' : 'var(--accent-orange)' }}>
@@ -49,7 +81,7 @@ export default async function LoginPage(props: { searchParams: Promise<{ message
 
                 <div style={{ margin: '2rem 0', textAlign: 'center', fontWeight: 800 }}>OR</div>
 
-                <GoogleButton tier={tier} />
+                <GoogleButton tier={tier} inviteCode={inviteCode} />
             </section>
         </div>
     )

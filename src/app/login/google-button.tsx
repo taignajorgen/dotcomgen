@@ -2,12 +2,15 @@
 
 import { createClient } from '../../utils/supabase/client'
 
-export function GoogleButton({ tier }: { tier?: string }) {
+export function GoogleButton({ tier, inviteCode }: { tier?: string; inviteCode?: string }) {
     const handleGoogle = async () => {
         const supabase = createClient()
         const callbackUrl = new URL(`${window.location.origin}/auth/callback`)
         if (tier) {
             callbackUrl.searchParams.set('tier', tier)
+        }
+        if (inviteCode) {
+            callbackUrl.searchParams.set('invite_code', inviteCode)
         }
         await supabase.auth.signInWithOAuth({
             provider: 'google',
