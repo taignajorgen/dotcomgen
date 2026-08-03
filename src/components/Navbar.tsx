@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '../utils/supabase/client';
-import GenerationsTicker from './GenerationsTicker';
 
 interface Props {
     onOpenPricing?: () => void;
@@ -31,7 +30,6 @@ export default function Navbar({ onOpenPricing, onOpenFeedback }: Props) {
         <nav className="navbar">
             <a href="/" className="navbar-brand">dotcomgen</a>
             <div className="navbar-links">
-                <GenerationsTicker compact onOpenPricing={onOpenPricing} />
                 <button
                     type="button"
                     className="navbar-link feedback-nav-btn"

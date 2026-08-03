@@ -78,7 +78,7 @@ export default function GenerationsTicker({ usage: initialUsage, compact = false
         case 'paid':
             planTitle = 'Paid Plan';
             badgeText = `⭐ ${usage.remaining} Generation${usage.remaining === 1 ? '' : 's'} Left`;
-            badgeColor = 'var(--accent-emerald)';
+            badgeColor = 'transparent';
             break;
 
         case 'free':
