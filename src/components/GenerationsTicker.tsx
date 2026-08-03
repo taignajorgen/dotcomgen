@@ -54,7 +54,7 @@ export default function GenerationsTicker({ usage: initialUsage, compact = false
         }
     };
 
-    if (!usage) {
+    if (!usage || usage.status === 'unauthenticated') {
         return null;
     }
 
@@ -91,13 +91,6 @@ export default function GenerationsTicker({ usage: initialUsage, compact = false
             planTitle = 'Free Plan';
             badgeText = '0 Generations Left Today';
             badgeColor = '#fca5a5';
-            break;
-
-        case 'unauthenticated':
-        default:
-            planTitle = 'Guest Mode';
-            badgeText = usage.remaining > 0 ? '⚡ 1 Free Generation Left' : '0 Generations Left (Sign Up)';
-            badgeColor = usage.remaining > 0 ? 'var(--accent-yellow)' : '#fca5a5';
             break;
     }
 
