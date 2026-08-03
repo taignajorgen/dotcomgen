@@ -216,7 +216,10 @@ export default function Home() {
         <section className="glass-panel">
           <form onSubmit={handleGenerate}>
             <div className="form-group">
-              <label htmlFor="idea">Describe your business or project</label>
+              <div className="form-label-row">
+                <label htmlFor="idea">Describe your business or project</label>
+                <GenerationsTicker compact onOpenPricing={() => setShowPricing(true)} />
+              </div>
               <textarea
                 id="idea"
                 rows={3}
