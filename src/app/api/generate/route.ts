@@ -3,6 +3,7 @@ export const maxDuration = 60; // Allow function to run up to 60 seconds
 
 import OpenAI from 'openai';
 import * as whois from 'whois';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { createClient } from '../../../utils/supabase/server';
 
 const openai = new OpenAI({
@@ -68,7 +69,6 @@ export async function POST(req: Request) {
 
         const cookieStore = await cookies();
         const anonUsed = cookieStore.get('dotcomgen_anon_used')?.value === 'true';
-
         let isAnonGuest = false;
 
         if (!user) {
@@ -79,6 +79,7 @@ export async function POST(req: Request) {
                 }, { status: 401 });
             }
             isAnonGuest = true;
+            cookieStore.set('dotcomgen_anon_used', 'true', { path: '/' });
         }
 
         const body = await req.json();
@@ -90,14 +91,19 @@ export async function POST(req: Request) {
 
         const isAdmin = user && user.email && ADMIN_EMAILS.includes(user.email);
 
+        const supabaseAdmin = createAdminClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
+
         // Usage gate (skip for admin and guest first try)
         if (user && !isAdmin) {
             // Check paid credits first
-            const { data: credits } = await supabase
+            const { data: credits } = await supabaseAdmin
                 .from('user_credits')
                 .select('credits_remaining, unlimited_until')
                 .eq('user_id', user.id)
-                .single();
+                .maybeSingle();
 
             const hasUnlimited = credits?.unlimited_until && new Date(credits.unlimited_until) > new Date();
             const hasPaidCredits = credits?.credits_remaining && credits.credits_remaining > 0;
@@ -107,7 +113,7 @@ export async function POST(req: Request) {
                 const todayStart = new Date();
                 todayStart.setHours(0, 0, 0, 0);
 
-                const { count } = await supabase
+                const { count } = await supabaseAdmin
                     .from('generation_log')
                     .select('*', { count: 'exact', head: true })
                     .eq('user_id', user.id)
@@ -124,10 +130,10 @@ export async function POST(req: Request) {
 
             // Decrement paid credits if applicable (and not unlimited)
             if (hasPaidCredits && !hasUnlimited) {
-                await supabase
+                await supabaseAdmin
                     .from('user_credits')
                     .update({
-                        credits_remaining: credits!.credits_remaining - 1,
+                        credits_remaining: (credits!.credits_remaining || 0) - 1,
                         updated_at: new Date().toISOString(),
                     })
                     .eq('user_id', user.id);
@@ -136,7 +142,7 @@ export async function POST(req: Request) {
 
         // Log the generation for logged-in users
         if (user) {
-            await supabase.from('generation_log').insert({ user_id: user.id });
+            await supabaseAdmin.from('generation_log').insert({ user_id: user.id });
         }
 
         let promptContent = `Idea: ${idea}`;

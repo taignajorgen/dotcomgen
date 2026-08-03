@@ -18,17 +18,21 @@ export default function GenerationsTicker({ usage: initialUsage, compact = false
     const [usage, setUsage] = useState<UsageData | null>(initialUsage || null);
 
     useEffect(() => {
-        if (initialUsage !== undefined) {
+        if (initialUsage) {
             setUsage(initialUsage);
-            return;
         }
+    }, [initialUsage]);
 
+    useEffect(() => {
         fetchUsage();
 
-        const handleUsageRefresh = () => fetchUsage();
+        const handleUsageRefresh = () => {
+            fetchUsage();
+        };
+
         window.addEventListener('usage-updated', handleUsageRefresh);
         return () => window.removeEventListener('usage-updated', handleUsageRefresh);
-    }, [initialUsage]);
+    }, []);
 
     const fetchUsage = async () => {
         try {
