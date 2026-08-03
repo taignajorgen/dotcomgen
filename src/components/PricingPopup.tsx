@@ -61,8 +61,6 @@ export default function PricingPopup({ onClose, isLoggedIn, isLimitReached }: Pr
     const [redeemStatus, setRedeemStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
     const [isRedeeming, setIsRedeeming] = useState(false);
 
-    const isRuum = inviteCode.trim().toUpperCase() === 'RUUM';
-
     const handleSelect = async (tier: Tier) => {
         if (!isLoggedIn) {
             const cleanCode = inviteCode.trim().toUpperCase();
@@ -173,9 +171,7 @@ export default function PricingPopup({ onClose, isLoggedIn, isLimitReached }: Pr
                                 <div className="pricing-name">{tier.name}</div>
                                 <div className="pricing-price">{tier.price}</div>
                                 <div className="pricing-desc">{tier.description}</div>
-                                <div className="pricing-credits">
-                                    {tier.id === 'free' && isRuum ? '3 daily + 50 BONUS credits' : tier.credits}
-                                </div>
+                                <div className="pricing-credits">{tier.credits}</div>
                                 {tier.id === 'free' && (
                                     <div style={{ marginTop: '0.75rem', textAlign: 'left' }}>
                                         <label htmlFor="invite-code-input" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: '0.25rem' }}>
@@ -185,7 +181,7 @@ export default function PricingPopup({ onClose, isLoggedIn, isLimitReached }: Pr
                                             <input
                                                 id="invite-code-input"
                                                 type="text"
-                                                placeholder="e.g. RUUM"
+                                                placeholder="e.g. PROMO50"
                                                 value={inviteCode}
                                                 onChange={(e) => setInviteCode(e.target.value)}
                                                 style={{
@@ -215,18 +211,6 @@ export default function PricingPopup({ onClose, isLoggedIn, isLimitReached }: Pr
                                                 </button>
                                             )}
                                         </div>
-                                        {isRuum && (
-                                            <div style={{
-                                                marginTop: '0.4rem',
-                                                background: 'var(--accent-yellow)',
-                                                border: '2px solid var(--border-color)',
-                                                padding: '0.25rem 0.5rem',
-                                                fontSize: '0.72rem',
-                                                fontWeight: 800,
-                                            }}>
-                                                🎁 +50 Free Generations!
-                                            </div>
-                                        )}
                                         {redeemStatus && (
                                             <div style={{
                                                 marginTop: '0.4rem',

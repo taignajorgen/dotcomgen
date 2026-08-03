@@ -12,8 +12,6 @@ export default async function LoginPage(props: { searchParams: Promise<{ message
     const loginHref = `/login${tier ? `?tier=${tier}` : ''}${inviteCode ? `?invite_code=${encodeURIComponent(inviteCode)}` : ''}`;
     const signupHref = `/login?mode=signup${tier ? `&tier=${tier}` : ''}${inviteQuery}`;
 
-    const isRuumCode = inviteCode.trim().toUpperCase() === 'RUUM';
-
     return (
         <div className="container" style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
             <header>
@@ -33,28 +31,16 @@ export default async function LoginPage(props: { searchParams: Promise<{ message
                     {isSignup && (
                         <>
                             <label htmlFor="invite_code" style={{ marginTop: '0.5rem' }}>
-                                Invite Code {isRuumCode && <span style={{ color: 'var(--accent-orange)', fontSize: '0.85rem' }}>(Code Active!)</span>}
+                                Invite Code (Optional)
                             </label>
                             <input
                                 id="invite_code"
                                 name="invite_code"
                                 type="text"
                                 defaultValue={inviteCode}
-                                placeholder="e.g. RUUM"
+                                placeholder="e.g. PROMO50"
                                 style={{ textTransform: 'uppercase' }}
                             />
-                            {isRuumCode && (
-                                <div style={{
-                                    marginTop: '0.5rem',
-                                    background: 'var(--accent-yellow)',
-                                    border: '2px solid var(--border-color)',
-                                    padding: '0.4rem 0.75rem',
-                                    fontWeight: 700,
-                                    fontSize: '0.85rem'
-                                }}>
-                                    🎁 Code RUUM: +50 Free Generations on Sign Up!
-                                </div>
-                            )}
                         </>
                     )}
 

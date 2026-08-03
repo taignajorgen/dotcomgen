@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '../utils/supabase/client';
 import Navbar from '../components/Navbar';
 import PricingPopup from '../components/PricingPopup';
+import GenerationsTicker from '../components/GenerationsTicker';
 
 const WHIMSICAL_MESSAGES = [
   "Bribing the ICANN gods...",
@@ -34,6 +35,9 @@ export default function Home() {
   const [limitReached, setLimitReached] = useState(false);
 
   useEffect(() => {
+    const handleOpenPricing = () => setShowPricing(true);
+    window.addEventListener('open-pricing', handleOpenPricing);
+
     const supabase = createClient();
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       setUser(user);
@@ -68,6 +72,10 @@ export default function Home() {
         }
       }
     });
+
+    return () => {
+      window.removeEventListener('open-pricing', handleOpenPricing);
+    };
   }, []);
 
   const handleSave = async (domain: string) => {
@@ -174,6 +182,9 @@ export default function Home() {
 
       setResults(data.domains || []);
       setStats(data.stats);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('usage-updated'));
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -183,7 +194,7 @@ export default function Home() {
 
   return (
     <>
-      <Navbar />
+      <Navbar onOpenPricing={() => setShowPricing(true)} />
       <div className="bg-orb orb-1"></div>
       <div className="bg-orb orb-2"></div>
       <div className="bg-orb orb-3"></div>
@@ -201,6 +212,8 @@ export default function Home() {
           <h1>dotcomgen.com</h1>
           <p className="subtitle">Find the perfect, available .com domain for your next big idea.</p>
         </header>
+
+        <GenerationsTicker onOpenPricing={() => setShowPricing(true)} />
 
         <section className="glass-panel">
           <form onSubmit={handleGenerate}>
