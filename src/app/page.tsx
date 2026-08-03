@@ -213,8 +213,6 @@ export default function Home() {
           <p className="subtitle">Find the perfect, available .com domain for your next big idea.</p>
         </header>
 
-        <GenerationsTicker onOpenPricing={() => setShowPricing(true)} />
-
         <section className="glass-panel">
           <form onSubmit={handleGenerate}>
             <div className="form-group">

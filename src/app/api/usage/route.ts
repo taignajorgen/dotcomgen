@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { createClient } from '../../../utils/supabase/server';
 
 const ADMIN_EMAILS = ['jerome.langvist@gmail.com', 'kontaktiere.mich@pm.me'];
@@ -8,7 +9,13 @@ export async function GET() {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-        return NextResponse.json({ status: 'unauthenticated', canGenerate: false, remaining: 0 });
+        const cookieStore = await cookies();
+        const anonUsed = cookieStore.get('dotcomgen_anon_used')?.value === 'true';
+        return NextResponse.json({
+            status: 'unauthenticated',
+            canGenerate: !anonUsed,
+            remaining: anonUsed ? 0 : 1,
+        });
     }
 
     // Admin bypass
@@ -16,12 +23,12 @@ export async function GET() {
         return NextResponse.json({ status: 'admin', canGenerate: true, remaining: Infinity });
     }
 
-    // Check paid credits
+    // Check paid / bonus credits in user_credits table
     const { data: credits } = await supabase
         .from('user_credits')
         .select('credits_remaining, unlimited_until')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
     if (credits?.unlimited_until && new Date(credits.unlimited_until) > new Date()) {
         return NextResponse.json({ status: 'unlimited', canGenerate: true, remaining: Infinity });

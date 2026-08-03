@@ -67,7 +67,7 @@ export default function GenerationsTicker({ usage: initialUsage, compact = false
 
         case 'unlimited':
             planTitle = 'Unlimited Plan';
-            badgeText = '🚀 Unlimited (∞ Left)';
+            badgeText = '🚀 Unlimited Generations';
             badgeColor = 'var(--accent-orange)';
             break;
 
@@ -79,21 +79,21 @@ export default function GenerationsTicker({ usage: initialUsage, compact = false
 
         case 'free':
             planTitle = 'Free Plan';
-            badgeText = `FREE: ${usage.remaining}/3 Left Today`;
+            badgeText = `⚡ ${usage.remaining} Generation${usage.remaining === 1 ? '' : 's'} Left Today`;
             badgeColor = 'var(--accent-cyan)';
             break;
 
         case 'exhausted':
             planTitle = 'Free Plan';
-            badgeText = 'FREE: 0/3 Left Today (Limit Reached)';
+            badgeText = '0 Generations Left Today';
             badgeColor = '#fca5a5';
             break;
 
         case 'unauthenticated':
         default:
             planTitle = 'Guest Mode';
-            badgeText = 'GUEST: 1 Free Generation';
-            badgeColor = 'var(--accent-yellow)';
+            badgeText = usage.remaining > 0 ? '⚡ 1 Free Generation Left' : '0 Generations Left (Sign Up)';
+            badgeColor = usage.remaining > 0 ? 'var(--accent-yellow)' : '#fca5a5';
             break;
     }
 
