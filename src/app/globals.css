@@ -935,6 +935,11 @@ button:disabled {
   background: var(--accent-yellow);
 }
 
+.footer-btn.guides:hover {
+  background: var(--accent-orange);
+  color: #ffffff;
+}
+
 .footer-btn.terms:hover {
   background: var(--accent-cyan);
 }

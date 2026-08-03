@@ -11,6 +11,9 @@ export default function Footer() {
           </span>
         </div>
         <nav className="footer-nav">
+          <a href="/guides" className="footer-btn guides">
+            Guides & Use Cases
+          </a>
           <a href="/terms" className="footer-btn terms">
             Terms of Use
           </a>
