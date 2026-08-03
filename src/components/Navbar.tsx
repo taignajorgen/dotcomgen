@@ -6,9 +6,10 @@ import GenerationsTicker from './GenerationsTicker';
 
 interface Props {
     onOpenPricing?: () => void;
+    onOpenFeedback?: () => void;
 }
 
-export default function Navbar({ onOpenPricing }: Props) {
+export default function Navbar({ onOpenPricing, onOpenFeedback }: Props) {
     const [user, setUser] = useState<any>(null);
 
     useEffect(() => {
@@ -18,11 +19,26 @@ export default function Navbar({ onOpenPricing }: Props) {
         });
     }, []);
 
+    const handleFeedbackClick = () => {
+        if (onOpenFeedback) {
+            onOpenFeedback();
+        } else {
+            window.dispatchEvent(new CustomEvent('open-feedback'));
+        }
+    };
+
     return (
         <nav className="navbar">
             <a href="/" className="navbar-brand">dotcomgen</a>
             <div className="navbar-links">
                 <GenerationsTicker compact onOpenPricing={onOpenPricing} />
+                <button
+                    type="button"
+                    className="navbar-link feedback-nav-btn"
+                    onClick={handleFeedbackClick}
+                >
+                    💬 Feedback
+                </button>
                 {user && (
                     <a href="/saved" className="navbar-link saved">Saved Domains</a>
                 )}
