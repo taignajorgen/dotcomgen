@@ -36,6 +36,11 @@ export default function RootLayout({
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <head>
         <meta name="impact-site-verification" content="3a8ccb66-f844-4b16-a28f-23e09f4758ec" {...({ value: "3a8ccb66-f844-4b16-a28f-23e09f4758ec" } as Record<string, string>)} />
+        <script
+          src="https://analytics.ahrefs.com/analytics.js"
+          data-key="IjJIfmyvLfMEnGdD3J9sxQ"
+          async
+        />
       </head>
       <body>
         {children}
